@@ -1,0 +1,8 @@
+//
+// Created by jacob on 5/3/16.
+//
+
+#ifndef CHYMERA_VIS_BINARYREADER_H
+#define CHYMERA_VIS_BINARYREADER_H
+
+#endif //CHYMERA_VIS_BINARYREADER_H
