@@ -18,45 +18,45 @@ int main (int argc, char *argv[]) {
 	fseek(f, 0, SEEK_END);
 	long int sizeOfFile = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	fprintf(stderr, "Outside of for loop: Current position is: %ld\n", ftell(f));
 
 	double **gridData = malloc(5 * sizeof(double *));
-
-	fprintf(stderr, "Size of double: %lu\n", sizeof(double));
 
 	for (int i = 0; i < 5; ++i) {
 		int sizeToRead = 0;
 		fread(&sizeToRead, sizeof(int), 1, f);
 		sizeToRead /= sizeof(double);
-		//fseek();
 		fprintf(stderr, "sizeToRead: %d\n", sizeToRead);
 		double *buffer = malloc(sizeof(double)*sizeToRead);
 		gridData[i] = malloc(sizeof(double) * sizeToRead);
 		fread(buffer, sizeof(double), sizeToRead, f);
-		fprintf(stderr, "Current position is: %ld\n", ftell(f));
 		for (int j = 0; j < sizeToRead; ++j) {
 			gridData[i][j] = buffer[j];
 		}
 		fread(&sizeToRead, sizeof(int), 1, f);
-		fprintf(stderr, "second sizeToRead: %d\n", sizeToRead);
 	}
 	int currentPosition = ftell(f);
-	fprintf(stderr, "sizeOfFile: %ld currentPosition: %d", sizeOfFile, currentPosition);
 
 	int sizeToRead;
-	fread(&sizeToRead, sizeof(int), 1, f);
+	fread(&sizeToRead, sizeof(float), 1, f);
 	fprintf(stderr, "sizeToRead: %d\n", sizeToRead);
-	int *metaData = malloc(sizeof(int)*sizeToRead);
-	fread(metaData, sizeof(int), sizeToRead, f);
+	
+	sizeToRead /= sizeof(float);
+	fprintf(stderr, "Shortened sizeToRead: %d\n", sizeToRead);
 
-	for (int i = 0; i < sizeToRead; ++i) {
-		if (metaData[i] != 0.0) {
-			fprintf(stderr, "metaData: %d\n",metaData[i]);
-		}
-	}
+	double zof3n, rof3n, delt, time, elost, den, sound, ommax;
+	int    jreq;
 
-	//fprintf(output, "%d\n", sizeToRead);
-	// Free memory here
+	fread(&zof3n, sizeof(double),1, f);
+	fread(&rof3n, sizeof(double),1, f);
+	fread(&delt, sizeof(double),1, f);
+	fread(&time, sizeof(double),1, f);
+	fread(&elost, sizeof(double),1, f);
+	fread(&den, sizeof(double),1, f);
+	fread(&sound, sizeof(double),1, f);
+	fread(&jreq, sizeof(int),1, f);
+	fread(&ommax, sizeof(double),1, f);
+
+	fprintf(stderr, "zof3n: %f rof3n: %f delt: %f time: %f elost: %f den: %f sound: %f jreq: %d ommax: %f\n", zof3n, rof3n, delt, time, elost, den, sound, jreq, ommax);
 
 	fclose(output);
 	fclose(f);
