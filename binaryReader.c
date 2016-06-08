@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 int main (int argc, char *argv[]) {
-	if (argc != 3) {
-		printf("Usage: %s <file1> <file2>\n", argv[0]);
+	if (argc != 2) {
+		printf("Usage: %s <file1>/n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -13,7 +13,6 @@ int main (int argc, char *argv[]) {
 		printf("Unable to open file!\n");
 		return 1;
 	}
-	FILE *output = fopen(argv[2], "w");
 
 	fseek(f, 0, SEEK_END);
 	long int sizeOfFile = ftell(f);
@@ -27,11 +26,16 @@ int main (int argc, char *argv[]) {
 		sizeToRead /= sizeof(double);
 		fprintf(stderr, "sizeToRead: %d\n", sizeToRead);
 		double *buffer = malloc(sizeof(double)*sizeToRead);
-		gridData[i] = malloc(sizeof(double) * sizeToRead);
+		//gridData[i] = malloc(sizeof(double) * sizeToRead);
 		fread(buffer, sizeof(double), sizeToRead, f);
+		char str[80];
+		sprintf(str, "GridData%dVTK.txt", i);
+		FILE *gridOutput = fopen(str, "w");
 		for (int j = 0; j < sizeToRead; ++j) {
-			gridData[i][j] = buffer[j];
+			//gridData[i][j] = buffer[j];
+			fprintf(gridOutput, "%f\n", buffer[j]);
 		}
+		fclose(gridOutput);
 		fread(&sizeToRead, sizeof(int), 1, f);
 	}
 	int currentPosition = ftell(f);
@@ -57,6 +61,10 @@ int main (int argc, char *argv[]) {
 	fread(&ommax, sizeof(double),1, f);
 
 	fprintf(stderr, "zof3n: %f rof3n: %f delt: %f time: %f elost: %f den: %f sound: %f jreq: %d ommax: %f\n", zof3n, rof3n, delt, time, elost, den, sound, jreq, ommax);
+
+	
+	FILE *output = fopen("MetaDataVTK.txt", "w");
+	fprintf(output, "%f\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%f\n", zof3n, rof3n, delt, time, elost, den, sound, jreq, ommax);
 
 	fclose(output);
 	fclose(f);
