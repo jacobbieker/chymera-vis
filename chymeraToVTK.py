@@ -1,6 +1,8 @@
 __author__ = 'jacob'
 import pyvtk, math, os
 from glob import glob
+import numpy
+#import visit_writer
 
 filename = 'chymera_data.vtk'
 title = 'Test CHYMERA Output'
@@ -61,10 +63,16 @@ def ReadGridData(filename):
 
 
 def GetGridData():
+    '''
+    Gets the data from the output of binaryReader
+    :return: A list of lists of grid data
+    '''
     grid_data = []
     set_of_grids = glob(pathname="./GridData*.txt")
+    print("Getting Grid Data")
     for grid in set_of_grids:
         grid_data.append(ReadGridData(grid))
+    print("Finished GridData")
     return grid_data
 
 
@@ -75,55 +83,48 @@ def GetMetaData():
 
 
 def WriteProxyDataset():
-    filename = "chymeraData.vtk"
+    filename = "chymeraData.visit"
+    with open(filename, "wt") as all_data:
+        all_data.write("!NBLOCKS 360\n")
 
     #f = open("test.visit", "wt")
     #f.write("!NBLOCKS 360\n")
     # Get the mesh 6 times and add it all up.
-    all_pts = []
-    all_conn = []
-    all_var = []
-    for i in range(360):
-        pts = []
-        conn = []
-        angle = math.radians(float(i) * 1.)
-        angle2 = math.radians(float(i + 1) * 1.)
-        pts += GetMeshPoints(angle, angle2)
-        conn += GetMeshConnectivity()
-        all_pts.append(pts)
-        all_conn.append(conn)
-        var = []
-        #print(len(pts) / 3)
-        #for j in range(len(pts) / 3):
-         #   var.append(math.cos(pts[j * 3]) + math.sin(pts[j * 3 + 1]) + math.sin(pts[j * 3 + 2]))
-            # Pass the data to visit_writer
-            #vars = [("var", 1, 1, var)]
-            #visit_writer.WriteUnstructuredMesh("test%d.vtk" % i, 1, pts, conn, vars)
-            #f.write("test%d.vtk\n" % i)
-        #all_var.append(var)
+    #all_pts = []
+    #size_of_grid = NZ*NX*NY
+    #connections_size = 8*size_of_grid
+    #print(connections_size)
+    #points_size = 3*size_of_grid
+    # Create memmaps to deal with Python running out of memory
+    #all_conn = numpy.memmap(os.path.join("/media/jacob/New Volume/","connections.memmap"), mode="w+", dtype="int", shape=(connections_size, connections_size))
+    #all_pts = numpy.memmap("points.memmap", mode="w+", dtype="float16", shape=(points_size, points_size))
+    #all_var = []
+    #pts_length = 0
+    #conn_length = 0
+        for i in range(360):
+            pts = []
+            conn = []
+            angle = math.radians(float(i) * 1.)
+            angle2 = math.radians(float(i + 1) * 1.)
+            pts += GetMeshPoints(angle, angle2)
+            conn += GetMeshConnectivity()
+            var = []
+            grid = pyvtk.UnstructuredGrid(points=pts, hexahedron=conn)
+            print("Finished Unstructured Grid")
+            # Get the GridData
+            values = GetGridData()
+            end_point = int(i + (len(pts) - 1 / 3))
+            print(int(i + ((len(pts) -1) / 3)))
+            celldata = pyvtk.CellData(pyvtk.Scalars(values[0][i:end_point], name="data1"),
+                                      pyvtk.Scalars(values[1][i:end_point], name="data2"),
+                                      pyvtk.Scalars(values[2][i:end_point], name="data3"),
+                                      pyvtk.Scalars(values[3][i:end_point], name="data4"),
+                                      pyvtk.Scalars(values[4][i:end_point], name="data5"),)
 
-    final_pts = []
-    final_conn = []
-    for index, element in enumerate(len(all_pts)):
-        for i, element_pts in enumerate(len(all_pts[index])):
-            final_pts.append(element_pts)
-
-    for index, element in enumerate(len(all_conn)):
-        for i, element_pts in enumerate(len(all_conn[index])):
-            final_conn.append(element_pts)
-
-    grid = pyvtk.UnstructuredGrid(points=final_pts, hexahedron=final_conn)
-
-    # Get the GridData
-    values = GetGridData()
-    celldata = pyvtk.CellData(pyvtk.Scalars(values[0], name="data1"),
-                              pyvtk.Scalars(values[1], name="data2"),
-                              pyvtk.Scalars(values[2], name="data3"),
-                              pyvtk.Scalars(values[3], name="data4"),
-                              pyvtk.Scalars(values[4], name="data5"),)
-
-    vtk = pyvtk.VtkData(grid, celldata, title)
-    vtk.tofile(filename)
+            vtk = pyvtk.VtkData(grid, celldata, title)
+            vtk.tofile("chymera%d.vtk\n" % i)
+            all_data.write("chymera%d\n" % i)
+            print("Done in i range" + str(i))
 
 
 WriteProxyDataset()
