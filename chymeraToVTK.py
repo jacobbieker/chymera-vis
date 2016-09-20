@@ -101,6 +101,7 @@ def WriteProxyDataset():
     #all_var = []
     #pts_length = 0
     #conn_length = 0
+        values = GetGridData()
         for i in range(360):
             pts = []
             conn = []
@@ -112,7 +113,6 @@ def WriteProxyDataset():
             grid = pyvtk.UnstructuredGrid(points=pts, hexahedron=conn)
             print("Finished Unstructured Grid")
             # Get the GridData
-            values = GetGridData()
             end_point = int(i + (len(pts) - 1 / 3))
             print(int(i + ((len(pts) -1) / 3)))
             celldata = pyvtk.CellData(pyvtk.Scalars(values[0][i:end_point], name="data1"),
